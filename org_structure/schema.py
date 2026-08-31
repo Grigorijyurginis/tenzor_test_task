@@ -9,4 +9,3 @@ def init_schema(connection):
     with connection.cursor() as cursor:
         cursor.execute(CREATE_TABLE_SQL)
         cursor.execute(CREATE_INDEX_SQL)
-    connection.commit()

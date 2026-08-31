@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+# Гарантирует, что корень репозитория попадает в sys.path при запуске
+# тестов, независимо от способа вызова (`pytest` или `python -m pytest`),
+# чтобы `import org_structure` из tests/ работал без дополнительных настроек.
