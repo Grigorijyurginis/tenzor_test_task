@@ -3,18 +3,19 @@ import pytest
 
 from unittest.mock import MagicMock
 from org_structure.loader import INSERT_SQL, load_into_db, load_json_file, parse_records
+from org_structure.models import OrgUnit, OrgUnitType
 
 
 def test_parse_records_valid_data():
-    """Корректные записи преобразуются в кортежи (id, parent_id, name, type)."""
+    """Корректные записи преобразуются в объекты OrgUnit."""
     raw = [
         {"id": 1, "ParentId": None, "Name": "Офис в Санкт-Петербурге", "Type": 1},
         {"id": 2, "ParentId": 1, "Name": "Отдел разработки", "Type": 2},
     ]
 
     assert parse_records(raw) == [
-        (1, None, "Офис в Санкт-Петербурге", 1),
-        (2, 1, "Отдел разработки", 2),
+        OrgUnit(id=1, parent_id=None, name="Офис в Санкт-Петербурге", type=OrgUnitType.OFFICE),
+        OrgUnit(id=2, parent_id=1, name="Отдел разработки", type=OrgUnitType.DEPARTMENT),
     ]
 
 

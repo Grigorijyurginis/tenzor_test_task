@@ -3,61 +3,20 @@ import json
 from pathlib import Path
 from typing import Any
 
-REQUIRED_FIELDS = ("id", "ParentId", "Name", "Type")
-VALID_TYPES = (1, 2, 3)
+from org_structure.models import OrgUnit
 
 INSERT_SQL = Path("sql/upsert_org_unit.sql").read_text(encoding="utf-8")
 
 
-def _is_plain_int(value: Any) -> bool:
-    """True только для настоящего int: в Python bool — подкласс int, поэтому
-    обычный isinstance(value, int) пропустил бы True/False как валидный id/type."""
-    return isinstance(value, int) and not isinstance(value, bool)
-
-
-def parse_records(raw_records: list[dict[str, Any]]) -> list[tuple]:
+def parse_records(raw_records: list[dict[str, Any]]) -> list[OrgUnit]:
     """
-    Проверяет и преобразует список сырых JSON-записей в кортежи
-    (id, parent_id, name, type), готовые для вставки в БД.
+    Проверяет и преобразует список сырых JSON-записей в список OrgUnit.
 
     При несоответствии структуры (отсутствует поле, неверный тип значения,
     недопустимое значение Type и т.п.) бросает ValueError с указанием
-    номера и содержимого проблемной записи.
+    номера и содержимого записи с ошибкой.
     """
-    rows = []
-    for index, record in enumerate(raw_records):
-        missing = [field for field in REQUIRED_FIELDS if field not in record]
-        if missing:
-            raise ValueError(
-                f"Запись #{index} не содержит обязательные поля {missing}: {record!r}"
-            )
-
-        node_id = record["id"]
-        parent_id = record["ParentId"]
-        name = record["Name"]
-        node_type = record["Type"]
-
-        if not _is_plain_int(node_id):
-            raise ValueError(
-                f"Запись #{index}: 'id' должен быть целым числом, получено {node_id!r}"
-            )
-        if parent_id is not None and not _is_plain_int(parent_id):
-            raise ValueError(
-                f"Запись #{index}: 'ParentId' должен быть целым числом или null, "
-                f"получено {parent_id!r}"
-            )
-        if not isinstance(name, str) or not name:
-            raise ValueError(
-                f"Запись #{index}: 'Name' должен быть непустой строкой, получено {name!r}"
-            )
-        if not _is_plain_int(node_type) or node_type not in VALID_TYPES:
-            raise ValueError(
-                f"Запись #{index}: 'Type' должен быть одним из {VALID_TYPES}, "
-                f"получено {node_type!r}"
-            )
-
-        rows.append((node_id, parent_id, name, node_type))
-    return rows
+    return [OrgUnit.from_raw(record, index) for index, record in enumerate(raw_records)]
 
 
 def load_json_file(path: Path) -> list[dict[str, Any]]:
@@ -85,7 +44,8 @@ def load_into_db(connection, path: Path) -> int:
     построчными INSERT — она на порядок быстрее на больших объёмах.
     """
     raw_records = load_json_file(path)
-    rows = parse_records(raw_records)
+    units = parse_records(raw_records)
+    rows = [(u.id, u.parent_id, u.name, int(u.type)) for u in units]
     with connection.cursor() as cursor:
         cursor.executemany(INSERT_SQL, rows)
     return len(rows)
