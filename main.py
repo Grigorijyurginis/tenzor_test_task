@@ -26,9 +26,7 @@ def show_employees(repo: OrgUnitsRepository, employee_id: int) -> None:
 
 
 def main() -> None:
-    """
-    Создаёт схему и загружает данные одной транзакцией
-    """
+    """Создаёт схему и загружает данные одной транзакцией."""
     connection = db.get_connection()
     try:
         repo = OrgUnitsRepository(connection)

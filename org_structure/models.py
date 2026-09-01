@@ -32,19 +32,26 @@ class OrgUnit:
         """
         missing = [f for f in ("id", "ParentId", "Name", "Type") if f not in record]
         if missing:
-            raise ValueError(f"Запись #{index} не содержит обязательные поля {missing}: {record!r}")
+            raise ValueError(
+                f"Запись #{index} не содержит обязательные поля {missing}: {record!r}"
+            )
 
         node_id, parent_id = record["id"], record["ParentId"]
         name, raw_type = record["Name"], record["Type"]
 
         if not _is_plain_int(node_id):
-            raise ValueError(f"Запись #{index}: 'id' должен быть целым числом, получено {node_id!r}")
+            raise ValueError(
+                f"Запись #{index}: 'id' должен быть целым числом, получено {node_id!r}"
+            )
         if parent_id is not None and not _is_plain_int(parent_id):
             raise ValueError(
-                f"Запись #{index}: 'ParentId' должен быть целым числом или null, получено {parent_id!r}"
+                f"Запись #{index}: 'ParentId' должен быть целым числом или null, "
+                f"получено {parent_id!r}"
             )
         if not isinstance(name, str) or not name:
-            raise ValueError(f"Запись #{index}: 'Name' должен быть непустой строкой, получено {name!r}")
+            raise ValueError(
+                f"Запись #{index}: 'Name' должен быть непустой строкой, получено {name!r}"
+            )
         if not _is_plain_int(raw_type) or raw_type not in (t.value for t in OrgUnitType):
             raise ValueError(
                 f"Запись #{index}: 'Type' должен быть одним из "
