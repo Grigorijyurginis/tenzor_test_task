@@ -5,7 +5,7 @@ pythonpath = ["."]
 # чтобы `import org_structure` из tests/ работал без дополнительных настроек.
 
 markers = [
-    "integration: тест с реальным подключением к PostgreSQL (нужен docker compose up -d --wait)",
+    "integration: тест с реальным подключением к PostgreSQL (нужен docker compose up -d --wait postgres)",
 ]
 
 # По умолчанию integration-тесты пропускаются (нужен настоящий Postgres) —
