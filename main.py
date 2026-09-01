@@ -1,26 +1,27 @@
 from pathlib import Path
 
-from org_structure import db, loader, queries, schema
+from org_structure import db
+from org_structure.repository import OrgUnitsRepository
 
 DATA_PATH = Path("data/org_structure.json")
 EMPLOYEE_ID = 3
 
 
-def init_db(connection) -> None:
+def init_db(repo: OrgUnitsRepository) -> None:
     """Создаёт схему БД (таблицу org_units и индекс)."""
-    schema.init_schema(connection)
+    repo.init_schema()
     print("Схема БД создана")
 
 
-def load_data(connection) -> None:
+def load_data(repo: OrgUnitsRepository) -> None:
     """Загружает данные из DATA_PATH."""
-    count = loader.load_into_db(connection, DATA_PATH)
+    count = repo.load(DATA_PATH)
     print(f"Загружено записей: {count}")
 
 
-def show_employees(connection, employee_id: int) -> None:
+def show_employees(repo: OrgUnitsRepository, employee_id: int) -> None:
     """Печатает сотрудников офиса, к которому относится employee_id."""
-    for name in queries.fetch_employees_by_office(connection, employee_id):
+    for name in repo.employees_by_office(employee_id):
         print(name)
 
 
@@ -30,9 +31,10 @@ def main() -> None:
     """
     connection = db.get_connection()
     try:
-        init_db(connection)
-        load_data(connection)
-        show_employees(connection, EMPLOYEE_ID)
+        repo = OrgUnitsRepository(connection)
+        init_db(repo)
+        load_data(repo)
+        show_employees(repo, EMPLOYEE_ID)
         connection.commit()
     except Exception:
         connection.rollback()
