@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from org_structure import db, loader, schema
+from org_structure import db, loader, queries, schema
 
 DATA_PATH = Path("data/org_structure.json")
+EMPLOYEE_ID = 3
 
 
 def init_db(connection) -> None:
@@ -17,6 +18,12 @@ def load_data(connection) -> None:
     print(f"Загружено записей: {count}")
 
 
+def show_employees(connection, employee_id: int) -> None:
+    """Печатает сотрудников офиса, к которому относится employee_id."""
+    for name in queries.fetch_employees_by_office(connection, employee_id):
+        print(name)
+
+
 def main() -> None:
     """
     Создаёт схему и загружает данные одной транзакцией
@@ -25,6 +32,7 @@ def main() -> None:
     try:
         init_db(connection)
         load_data(connection)
+        show_employees(connection, EMPLOYEE_ID)
         connection.commit()
     except Exception:
         connection.rollback()
