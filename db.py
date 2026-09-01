@@ -20,11 +20,14 @@ def get_connection(dsn: str | None = None):
     Открывает соединение с PostgreSQL.
 
     Приоритет источников параметров подключения:
-    1. явный `dsn`, переданный вызывающим кодом (например, флаг --dsn CLI);
+    1. явный `dsn`, переданный вызывающим кодом;
     2. стандартные переменные окружения libpq (PGHOST, PGPORT, PGUSER,
-       PGPASSWORD, PGDATABASE) — их psycopg.connect() читает сам;
+       PGPASSWORD, PGDATABASE) — их psycopg.connect() читает сам; так
+       подключается сервис `app` в docker-compose.yml (PGHOST=postgres —
+       имя сервиса в docker-сети);
     3. DEFAULT_DSN, собранный из POSTGRES_* переменных (.env или окружение)
-       с дефолтами локального docker-compose из этого репозитория.
+       с дефолтами локального docker-compose — так подключается локальный
+       запуск (`python main.py`) к порту, опубликованному на `localhost`.
     """
     if dsn:
         return psycopg.connect(dsn)

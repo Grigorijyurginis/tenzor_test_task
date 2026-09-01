@@ -20,5 +20,17 @@ services:
       timeout: 3s
       retries: 5
 
+  app:
+    build: .
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER:-org_structure}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-org_structure}
+      PGDATABASE: ${POSTGRES_DB:-org_structure}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   org_structure_pgdata:

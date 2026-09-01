@@ -1,22 +1,37 @@
+import argparse
+
 from pathlib import Path
 
-from org_structure import db
+import db
+
 from org_structure.repository import OrgUnitsRepository
 
 DATA_PATH = Path("data/org_structure.json")
-EMPLOYEE_ID = 3
+DEFAULT_EMPLOYEE_ID = 3  # id из примера в задании
+
+
+def parse_args() -> argparse.Namespace:
+    """Разбирает аргументы командной строки: --employee-id."""
+    parser = argparse.ArgumentParser(
+        description="Импорт орг. структуры и вывод сотрудников офиса по id сотрудника."
+    )
+    parser.add_argument(
+        "--employee-id",
+        type=int,
+        default=DEFAULT_EMPLOYEE_ID,
+        help=f"Id сотрудника, офис которого нужно найти (по умолчанию {DEFAULT_EMPLOYEE_ID})",
+    )
+    return parser.parse_args()
 
 
 def init_db(repo: OrgUnitsRepository) -> None:
     """Создаёт схему БД (таблицу org_units и индекс)."""
     repo.init_schema()
-    print("Схема БД создана")
 
 
 def load_data(repo: OrgUnitsRepository) -> None:
     """Загружает данные из DATA_PATH."""
-    count = repo.load(DATA_PATH)
-    print(f"Загружено записей: {count}")
+    repo.load(DATA_PATH)
 
 
 def show_employees(repo: OrgUnitsRepository, employee_id: int) -> None:
@@ -26,13 +41,14 @@ def show_employees(repo: OrgUnitsRepository, employee_id: int) -> None:
 
 
 def main() -> None:
-    """Создаёт схему и загружает данные одной транзакцией."""
+    """Создаёт схему, загружает данные и выводит сотрудников офиса — одной транзакцией."""
+    args = parse_args()
     connection = db.get_connection()
     try:
         repo = OrgUnitsRepository(connection)
         init_db(repo)
         load_data(repo)
-        show_employees(repo, EMPLOYEE_ID)
+        show_employees(repo, args.employee_id)
         connection.commit()
     except Exception:
         connection.rollback()

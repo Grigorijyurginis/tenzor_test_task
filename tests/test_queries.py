@@ -3,7 +3,9 @@ import pytest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from org_structure import db, loader, schema
+import db
+
+from org_structure import loader, schema
 from org_structure.queries import EMPLOYEES_BY_OFFICE_SQL, fetch_employees_by_office
 
 
@@ -25,7 +27,7 @@ def test_fetch_employees_by_office_against_real_db():
     """
     Проверка, что сам SQL-запрос возвращает верный результат на реальных данных
     из задания. Требует поднятого docker compose:
-        docker compose up -d --wait
+        docker compose up -d --wait postgres
         pytest -m integration
 
     Тест выполняется в одной незакоммиченной транзакции и откатывается в finally
